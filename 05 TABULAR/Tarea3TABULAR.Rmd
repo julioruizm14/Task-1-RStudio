@@ -1,0 +1,90 @@
+---
+title: "Tarea 3"
+author: 'Julio David Ruiz Mendoza'
+date: 'Mayo 2021'
+output:
+  pdf_document: default
+  html_document: default
+subtitle: 'Representación y tabulación de datos'
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library( knitr )
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+```
+
+Trabajamos con el conjunto de datos  `medicamentos.csv` , que puedes encontrar en <http://gauss.inf.um.es/datos/>
+
+Lee el fichero de datos y asignarlo al objeto `df`.
+
+```{r}
+df <- read.table( "http://gauss.inf.um.es/datos/medicamentos.csv",header = TRUE,
+                  sep = ";",dec = ".",stringsAsFactors = T )
+
+str( df )
+head( df ) 
+
+library(ggplot2)
+```
+\clearpage
+
+1. Crea un gráfico de dispersión de mes 1 frente al mes 2, y etiqueta los ejes y el gráfico.
+
+```{r}
+ggplot(df, aes(Month0, Month3)) + geom_point() + labs(title = "Medicamentos",
+                                                      x = "Mes 0", y = "Mes 3")
+
+```
+\clearpage
+2. Añade al gráfico de dispersión creado un agrupamiento según  `Sex`
+
+```{r}
+ggplot(df, aes(Month0, Month3)) + geom_point() + facet_grid(.~Sex) +
+  labs(title = "Medicamentos",x = "Mes 0", y = "Mes 3") 
+
+```
+\clearpage
+3. Añade al gráfico de dispersión con el agrupamiento según  `sexo` otro agrupamiento por `Group`
+```{r}
+
+ggplot(df, aes(Month0, Month3)) + geom_point() + facet_grid(Group~Sex) +
+  labs(title = "Medicamentos",x = "Mes 0", y = "Mes 3") 
+
+```
+\clearpage
+
+4. Añade al gráfico de dispersión con el agrupamiento según  `sexo` otro agrupamiento por `Group`
+```{r}
+ggplot(df, aes(Month0, Month3, color = Sex, shape=Group)) + geom_point() +
+  labs(title = "Medicamentos",x = "Mes 0", y = "Mes 3", color='Sexo',
+       shape='Grupo') 
+```
+\clearpage
+5. Crea un gráfico de puntos de Mes1 frente a Grupo. Añade algo de ruido con el layer `geom_jitter()`
+```{r}
+ggplot(df, aes(Month0, Group)) + geom_jitter(height = 0.2) + labs(title = 'Medicamentos', 
+  x='Mes 0', y = 'Grupo')
+```
+\clearpage
+6. Colorea los puntos según Sexo
+```{r}
+ggplot(df, aes(Month0, Group, color=Sex)) + geom_jitter(height = 0.15) + 
+  labs(title = 'Medicamentos',  x='Mes 0', y = 'Grupo', color='Sexo')
+```
+\clearpage
+7. En lugar de puntos haz un boxplot para cada sexo y según Grupos
+```{r}
+ggplot(df, aes(Month0, Group)) + facet_grid(.~Sex) + geom_boxplot(fill = 'steelblue') + 
+  labs(title='Boxplot de medicamentos', x='Sexo', y='Grupo', fill='')
+
+```
+\clearpage
+8. Siempre es importante dejar traza de la sesión, lo hacemos con la función `sessionInfo()`
+
+```{r}
+sessionInfo()
+```
+
+

@@ -1,0 +1,47 @@
+---
+title: "Autoevaluación 3"
+author: ''
+output:
+  pdf_document: default
+  html_document: default
+subtitle: '[0010] Representación y tabulación de datos'
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library( knitr )
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Trabajamos con el conjunto de datos  `medicamentos.csv` , que puedes encontrar en <http://gauss.inf.um.es/datos/>
+
+Lee el fichero de datos y asignarlo al objeto `df`.
+
+```{r}
+df <- read.table( "http://gauss.inf.um.es/datos/medicamentos.csv", 
+                  header = TRUE,
+                  sep = ";",
+                  dec = ".",
+                  stringsAsFactors = T )
+
+str( df )
+head( df ) 
+
+library(ggplot2)
+```
+
+1. Crea un gráfico de dispersión de mes 1 frente al mes 2, y etiqueta los ejes y el gráfico.
+2. Añade al gráfico de dispersión creado un agrupamiento según  `Sex`
+3. Añade al gráfico de dispersión con el agrupamiento según  `sexo` otro agrupamiento por `Group`
+4. Añade al gráfico de dispersión con el agrupamiento según  `sexo` otro agrupamiento por `Group`
+5. Crea un gráfico de puntos de Mes1 frente a Grupo. Añade algo de ruido con el layer `geom_jitter()`
+6. Colorea los puntos según Sexo
+7. En lugar de puntos haz un boxplot para cada sexo y según Grupos
+8. Siempre es importante dejar traza de la sesión, lo hacemos con la función `sessionInfo()`
+
+```{r}
+sessionInfo()
+```
+
+

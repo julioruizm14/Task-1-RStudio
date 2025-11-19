@@ -1,0 +1,74 @@
+---
+title: "Tarea 4"
+author: 'Julio David Ruiz Mendoza'
+date: 'Mayo 2021'
+output:
+  pdf_document: default
+  html_document: default
+subtitle: 'Representación y tabulación de datos'
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library( knitr )
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, error = FALSE, warning = FALSE)
+```
+
+
+Trabajamos con el conjunto de datos `mpg`, que se insrtala al instalar ggplot2
+
+
+```{r}
+library(ggplot2)
+head( mpg )
+```
+\clearpage
+
+1. Partiendo del gráfico siguiente, añade una curva que se ajuste a los datos. (Nota explora la función `stat_smooth()`)
+
+```{r, message=FALSE}
+ggplot( data = mpg, aes( x = displ, y = hwy ) ) +
+    geom_point( aes( colour = drv ) ) 
+```
+\clearpage
+
+Añado la curva
+```{r, message=FALSE}
+ggplot( data = mpg, aes( x = displ, y = hwy ) ) +
+    geom_point( aes( colour = drv ) ) + stat_smooth()
+```
+
+\clearpage
+
+2. Haz que también se dibuje una curva distinta para cada nivel de `drv`. Haz que no aparezca el intervalo de confianza (Sugerencia: explora el parametro `se` de `geom_smooth()`)
+
+```{r, message=FALSE}
+ggplot( data = mpg, aes( x = displ, y = hwy ) ) +
+    geom_point( aes( colour = drv ) ) + geom_smooth( aes(color = drv), se=FALSE)
+```
+
+\clearpage
+
+3. Trata de reproducir el siguiente gráfico
+
+El código es:
+
+```{r}
+ggplot( data = mpg, aes( x = displ, y = hwy ) ) + geom_smooth( aes(linetype = drv), se=FALSE) +
+    geom_point( aes( colour = drv ) ) 
+```
+\clearpage
+
+4. Siempre es importante dejar traza de la sesión, lo hacemos con la función `sessionInfo()`
+
+```{r}
+sessionInfo()
+```
+
+
+
+
+
+
+

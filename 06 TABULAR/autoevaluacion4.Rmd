@@ -1,0 +1,65 @@
+---
+title: "Autoevaluación 4"
+author: ''
+output:
+  pdf_document: default
+  html_document: default
+subtitle: '[0010] Representación y tabulación de datos'
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library( knitr )
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, error = FALSE, warning = FALSE)
+```
+
+
+Trabajamos con el conjunto de datos `mpg`, que se insrtala al instalar ggplot2
+
+
+```{r}
+library(ggplot2)
+head( mpg )
+```
+
+1. Partiendo del gráfico siguiente, añade una curva que se ajuste a los datos. (Nota explora la función `stat_smooth()`)
+
+```{r, message=FALSE}
+ggplot( data = mpg, aes( x = displ, y = hwy ) ) +
+    geom_point( aes( colour = drv ) ) 
+```
+
+Añado la curva
+```{r, message=FALSE}
+
+```
+
+2. Haz que también se dibuje una curva distinta para cada nivel de `drv`. Haz que no aparezca el intervalo de confianza (Sugerencia: explora el parametro `se` de `geom_smooth()`)
+
+```{r, message=FALSE}
+
+```
+
+3. Trata de reproducir el siguiente gráfico
+
+![Gráfico ejemplo](http://gauss.inf.um.es/tabular/www/pics/galeria-ggplot-autoeval5.png)
+
+El código es:
+
+```{r, eval=FALSE }
+
+```
+
+4. Siempre es importante dejar traza de la sesión, lo hacemos con la función `sessionInfo()`
+
+```{r}
+sessionInfo()
+```
+
+
+
+
+
+
+

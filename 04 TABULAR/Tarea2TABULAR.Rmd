@@ -1,0 +1,108 @@
+---
+title: "Tarea 2"
+author: "Julio David Ruiz Mendoza"
+date: "Mayo 2021"
+output:
+  pdf_document: default
+  html_document: default
+subtitle: ' Representación y tabulación de datos'
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = TRUE,
+	warning = FALSE
+)
+```
+
+## Enunciado
+
+
+Vamos a responder preguntas sobre los datos que se encuentran en el fichero `vuelos.csv` que contiene datos sobre horarios, retrasos, aviones, tiempos y distancias de vuelos que salen de Houston los primeros meses de 2011.
+
+Es obligatorio utilizar las funciones del paquete `dplyr` y recomendable utilizar pipes `%>%`.
+
+1.  Carga la librería `dplyr`
+
+```{r}
+library("dplyr")
+```
+
+
+2.  Descarga el fichero de datos `vuelos.csv` situado en <http://gauss.inf.um.es/datos/> en local o localiza la url donde se encuentra.
+
+Lee el fichero (desde local o desde la url) usando correctamente los argumentos de la función `read.table()`: `header`, `sep`, `dec`. Guarda los datos en una variable llamada `vuelos`.
+
+```{r}
+vuelos <- read.table(file = "vuelos.csv", header = TRUE, sep = ',',
+                     dec = '.', stringsAsFactors = TRUE)
+```
+        
+
+
+3.  Selecciona los vuelos con destino `SFO` u `OAK` utilizando las funciones del paquete dplyr. ¿Con cuántos vuelos nos quedamos?
+
+```{r}
+head(filter(vuelos,dest == "SFO" | dest == "OAK"))
+nrow(filter(vuelos,dest == "SFO" | dest == "OAK"))
+
+```
+
+Hay 1121 vuelos con esos destinos.
+ 
+4.  Selecciona los vuelos que se han retrasado más de una hora. ¿Cuál es el destino que más se retrasa en proporción al número de vuelos?
+
+```{r}
+
+vuelos_del <- filter(vuelos, dep_delay > 60)
+a <- dplyr::count(vuelos_del,dest)
+a[which.max(a$n),]
+
+vuelos_del <- filter(vuelos, arr_delay > 60)
+b <- dplyr::count(vuelos_del,dest)
+b[which.max(b$n),]
+
+```
+
+El destino que más se retrasa en salida es ATL con 163 retrasos, a la llegada ORD con 170.
+
+
+5. Encuentra 4 maneras diferentes de utilizar la función `select` para seleccionar las variables relacionadas con los retrasos (delay)
+
+```{r}
+head(  select(vuelos, dep_delay, arr_delay)  )
+head(  select(vuelos, ends_with('delay'))  )
+head(  select(vuelos, matches('delay'))  )
+head(  select(vuelos, contains('delay'))  )
+
+```
+
+6. Agrupa los vuelos por fecha y calcula: media, mediana y cuartil 75 de los retrasos en los vuelos por hora.
+
+```{r} 
+
+summarise(group_by(vuelos,date,hour), media = mean(dep_delay),
+          mediana=median(dep_delay), 
+          cuartil_75=quantile(dep_delay ,0.75, na.rm = TRUE), n=n())
+
+```
+
+
+7. Utilizando pipes calcula la media de retraso en los vuelos por día y hora, la cantidad de vuelos por día y hora y luego muestra solo los casos para los cuales haya más de 10.
+
+```{r}
+
+a <- vuelos %>%
+  group_by(date,hour) %>%
+  summarise(media =  mean(dep_delay), n= n())
+a
+
+a %>%
+  filter(n>10)
+
+```
+
+
