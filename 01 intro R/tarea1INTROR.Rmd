@@ -1,0 +1,106 @@
+---
+title: "Tarea 1 - Trabajando con RStudio"
+author: "Julio David Ruiz Mendoza"
+date: "Mayo 2021"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library("tibble")
+library("dplyr")
+
+```
+
+
+## Iris
+
+1. Guarda los datos del objeto iris en un fichero de texto iris.csv.
+
+```{r iris, echo=TRUE, warning=FALSE}
+
+write.csv(iris, file = "iris.csv")
+
+```
+
+
+
+2. Abre el fichero iris.csv en el editor y modifícalo:
+
+- Cambia el nombre de las variables traduciéndolas al castellano.
+
+- Reduce el número de registros conservando diez por especie, es decir, seleccionado un total de 30 registros.
+
+- Añade uno o varios comentarios donde especifiques, al menos, tu nombre y la fecha de edición del fichero. Luego guarda los cambios realizados.
+
+```{r datos, echo=TRUE}
+
+datos <- read.csv("iris.csv")
+nombres <- c("# Julio David Ruiz Mendoza 06.05.2021", "Long.sepalo", "Ancho.sepalo",
+             "Long.petalo", "Ancho.petalo", "Especies")
+colnames(datos) <- nombres
+
+datos$Especies <- as.factor(datos$Especies)
+levels(datos$Especies) 
+d1 <- sample_n(subset(datos,Especies=="setosa"), 10) 
+d2 <- sample_n(subset(datos,Especies=="versicolor"), 10) 
+d3 <- sample_n(subset(datos,Especies=="virginica"), 10) 
+datos <- rbind(d1, d2, d3)
+
+datos[1]=1:30
+write.csv(datos, file = "iris.csv",row.names = FALSE)
+
+```
+
+
+3. Una vez realizadas las modificaciones pertinentes, carga los datos del fichero iris.csv y comprueba, cargando el fichero, que todo ha salido bien.
+
+```{r ver_datos, echo=TRUE}
+read.csv(file = "iris.csv")
+```
+
+
+## Tratamientos
+
+```{r tratamientos, echo=TRUE}
+#Construye una tabla de datos adecuada a la situación descrita y guárdala en el fichero
+#tratamiento.csv
+
+
+control <- c(4.17, 5.58, 5.18, 6.11, 4.5)
+tratamiento1 <- c(4.81, 4.17, 4.41, 3.59, 5.87 )
+tratamiento2 <- c(6.31, 5.12, 5.54, 5.5, 5.37 )
+
+pesos <- c(control, tratamiento1, tratamiento2)
+grupos <- c(rep("control", 5), rep("tratamiento1", 5), rep("tratamiento2",5))
+tratamientos <- data.frame(grupos, pesos)
+
+
+tratamientos
+write.csv(tratamientos,"tratamiento.csv")
+
+```
+
+## Preguntas
+
+1. ¿Cuántas variables de estudio estamos considerando?
+
+    Podemos distinguir dos variables: grupos (con 3 niveles) y los pesos (númerico).
+
+2. ¿Cuántos registros debe tener nuestra tabla de datos si cada planta solamente pertenece a un grupo?
+     
+    15 registros. 
+
+3. ¿Existen variables cualitativas? ¿Cómo las codificamos?
+
+    Sí. La variable grupos es `factor`
+
+4. ¿Conveniente almacenar toda la información en la misma tabla?
+
+    Sí, una vez tenemos la información la podemos manejar a nuestro antojo.
+
+
