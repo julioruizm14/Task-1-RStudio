@@ -1,0 +1,122 @@
+---
+title: "Primeros contrastes de hipótesis"
+author: "Julio David Ruiz Mendoza"
+subtitle: Métodos de contraste de hipótesis y diseño de experimentos
+date: "Mayo 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Tarea 1
+
+A unos pacientes se les ha administrado unos medicamentos para ver si son efectivos en la disminución de
+ciertas moléculas en sangre. Se han tomado medidas al inicio del estudio, a los 3 meses y a los 6 meses. Los
+valores obtenidos están recogidos en el fichero medicamentos.csv. Se pide:
+`#Carga la base de datos primero`
+`#Comprueba que los datos están bien cargados`
+```{r}
+medic <- read.csv(file="medicamentos.csv", header = T, stringsAsFactors = T)
+head(medic)
+tail(medic)
+```
+
+
+a. Contrastar, con nivel de significación α = 0.05, si la media de los valores en el mes inicial (Month0) es 10.  
+
+Hipótesis nula: $H_0: \mu = 10$  
+Hipótesis alternativa $H_1: \mu \ne 10$
+
+```{r}
+hist( medic$Month0 )
+
+qqnorm( medic$Month0 )
+qqline( medic$Month0 )
+```
+La linea se ajusta.
+```{r}
+shapiro.test( medic$Month0 )
+```
+Tenemos p-valor = 0.5142 > 0.05 en Shapiro-Wilk test.
+```{r}
+t.test( medic$Month0, mu = 10, alternative = "two.sided" )
+```
+
+Con un p-value = 0.5294 mayor de 0.05 no podemos rechazar la hipótesis nula $H_0$, la diferencia no es estadísticamente significativa.
+El intervalo de confianza incluye el 10 (9.724152, 10.533047).
+
+
+b. ¿Debemos aceptar o rechazar la diferencia de la media del mes inicial (Month0) según el sexo (Sex), para α = 0.05?
+
+En principio vamos a suponer las variables **independientes**.
+
+```{r}
+table( medic$Sex ) #n>>
+
+M0 <- medic$Month0[medic$Sex == "M"]
+F0 <- medic$Month0[medic$Sex == "F"]
+
+qqnorm(M0); qqline(M0); shapiro.test(M0)    #p-value = 0.8789
+qqnorm(F0); qqline(F0); shapiro.test(F0)    #p-value = 0.4135
+```
+No podemos rechazar la normalidad.
+```{r}
+fligner.test( medic$Month0, medic$Sex )
+```
+p-value = 0.8018, por lo que no rechazamos homogeneidad de varianzas.
+
+Hipótesis nula: $H_0: \mu_1 = \mu_2$  
+Hipótesis alternativa $H_1: \mu_1 \ne \mu_2$
+
+Se supone normalidad y homogeneidad de varianzas.
+
+```{r}
+t.test( medic$Month0 ~ medic$Sex, alternative = "two.sided", paired = F, var.equal = T )
+```
+p-value = 0.3435 > 0.05, por lo que no rechazamos la hipótesis nula y podemos suponer que las medias son iguales para ambos sexos.
+
+c. Los investigadores afirman que hay diferencia entre los valores tomados en el mes inicial (Month0) y en el tercer mes (Month6). ¿Tienen razón?
+
+Tenemos que realizar un contraste para muestras **dependientes**.  
+Veamos la normalidad.
+```{r}
+qqnorm( medic$Month3-medic$Month0 ); qqline( medic$Month3-medic$Month0 )
+shapiro.test( medic$Month3-medic$Month0 )
+```
+p-value < 2.2e-16 menor que 0.05 no podemos aceptar la normalidad, pero tenemos una muestra de n = 96 > 50.
+```{r}
+t.test( medic$Month3, medic$Month0, alternative = "two.sided", paired = TRUE )
+```
+Obtenemos un p-value = 0.3011 > 0.05, por lo que no podemos rechazar la hipótesis de que ambos y no damos la razón a los investigadores.
+
+d. Dentro del grupo “P” (nos quedamos con los datos solo de este grupo), ¿hay diferencias significativas en la media del mes 3 (Month3) con respecto a sexo?
+
+```{r}
+library("dplyr")
+medicP <- filter(medic, Group=="P")
+table( medicP$Sex )
+
+MP3 <- medicP$Month3[medicP$Sex == "M"]
+FP3 <- medicP$Month3[medicP$Sex == "F"]
+
+qqnorm(MP3); qqline(MP3); shapiro.test(MP3)    #p-value = 3.177e-09
+qqnorm(FP3); qqline(FP3); shapiro.test(FP3)    #p-value = 4.4e-08
+```
+
+No podemos aceptar la suposición de normalidad y la muestra no suficientemente grande (n=24), por lo que el test puede darnos un falso positivo.
+```{r}
+fligner.test( medicP$Month0, medicP$Sex )
+```
+p-value = 0.6237, no rechazamos homogeneidad de varianzas.
+
+Hipótesis nula: $H_0: \mu_1 = \mu_2$  
+Hipótesis alternativa $H_1: \mu_1 \ne \mu_2$
+No suponemos normalidad y suponemos homogeneidad de varianzas.
+```{r}
+#t.test(medic$Month0 ~ medic$Sex, alternative = "two.sided", paired = F, var.equal = T)
+wilcox.test( Month3 ~ Sex, data = medicP )
+```
+
+Hemos calculado un p-value = 0.767 > 0.05, no rechazamos $H_0$ por lo que no visualizamos diferencias en la media en el mes 3 respecto al sexo.

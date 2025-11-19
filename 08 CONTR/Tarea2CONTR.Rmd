@@ -1,0 +1,237 @@
+---
+title: "Contrastes avanzados"
+author: "Julio David Ruiz Mendoza"
+subtitle: Métodos de contraste de hipótesis y diseño de experimentos
+date: "Mayo 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Tarea 2
+
+## Ejercicio 1
+
+Lee el fichero dieta.csv en el que se recogen las siguientes variables y resuelve los apartados propuestos:
+
++ id: Identificador del sujeto observado
++ edad: grupo de edad al que pertenece el sujeto. Menores de 40, entre 40 y 50, y mayores de 50.
++ tipoDiet: tipo de dieta que realiza.
++ peso0: peso (kg) antes de comenzar la dieta.
++ peso1: peso (kg) en la mitad de la dieta.
++ peso2: peso (kg) al finalizar la dieta.
+
+```{r}
+dieta <- read.csv2("dieta.csv", dec = '.')
+head(dieta)
+```
+
+a. Convierte en factor las variables edad y tipoDiet.
+
+```{r}
+dieta$edad <- as.factor(dieta$edad) 
+dieta$tipoDiet <- as.factor(dieta$tipoDiet)
+str(dieta)
+```
+
+
+b. Comprueba si hay diferencias en la media de los pesos antes de comenzar la dieta (Variable peso0) según el grupo de edad al que pertenece y encuentra en qué grupos están las diferencias.
+
+Vamos a realizar un contraste de hipóetsis para ver si pueden tener las mismas medias. Podemos suponer que las muestras son independientes y debemos revisar el supuesto de normalidad y homocestidad. Finalmente realizar ANOVA de una vía.
+```{r}
+table( dieta$edad ) #n < 50
+
+edad1 <- dieta$peso0[dieta$edad == "1"]
+edad2 <- dieta$peso0[dieta$edad == "2"]
+edad3 <- dieta$peso0[dieta$edad == "3"]
+
+qqnorm(edad1); qqline(edad1); shapiro.test(edad1)   #p-value = 0.1022
+qqnorm(edad2); qqline(edad2); shapiro.test(edad2)   #p-value = 0.06038
+qqnorm(edad3); qqline(edad3); shapiro.test(edad3)   #p-value = 0.4849
+
+bartlett.test( dieta$peso0, dieta$edad )            #p-value = 0.8037              
+#Usamos este test porque tenemos mas de dos grupos.
+```
+Obtenemos p-valor mayor que 0.05 en todos los test realizados, por lo que los resultados nos llevan a suponer normalidad y homogeneidad de varianza.
+La hipótesis nula $H_0$ es que no hay diferencia entre las medias y la
+alternativa, $H_1$, que al menos una de las medias difiere del resto.
+
+```{r}
+modelo1b <- aov( peso0 ~ edad, data = dieta )
+summary( modelo1b )
+```
+Con un p-value = 0.000173 < 0.05, rechazamos la hipótesis nula. Podemos aceptar la hipótesis alternativa de que al menos una de las medias es diferente. **La edad es relevante en el peso inicial**.
+
+Veamos qué grupos de edad son los que difieren. Como solo tenemos 3 grupos (<6) usaremos el método de ajuste de Bonferroni.
+```{r}
+pairwise.t.test( dieta$peso0, 
+                 dieta$edad, 
+                 p.adj = "bonferroni")
+```
+**No se encuentra una diferencia significativa es para los grupos de edad 1 y 2** (p-value = 0.33973 > 0.05). **Para el resto de parejas** p-value es menor de 0.05 por lo que decimos que **hay diferencias apreciables**.
+
+c. Comprueba si hay diferencias significativas en el peso final (peso2) según la interacción del grupo
+de edad al que pertenece el sujeto y el tipo de dieta al que se somete. Representa el gráfico de
+interacción con la edad en el eje x y el tipoDiet en tres líneas diferentes.
+
+
+En este caso debemos realizar un **ANOVA de dos vías**. Se debe comprobar el supuesto de independencia, el supuesto de normalidad y el supuesto de homocedasticidad. Estos supuestos se deben comprobar para el factor edad y para el factor tipoDiet.  
+
++ Comprobación de supuestos para el factor edad:
+
+```{r}
+shapiro.test( dieta$peso2[dieta$edad == "1"] )    #p-value = 0.4284
+shapiro.test( dieta$peso2[dieta$edad == "2"] )    #p-value = 0.9267
+shapiro.test( dieta$peso2[dieta$edad == "3"] )    #p-value = 0.382
+
+bartlett.test( peso2 ~ edad, data = dieta )       #p-value = 0.1797
+```
+
+Para todos los grupos de edad se obtiene un p-value mayor de 0.05 (0.4284, 0.9267, 0.382) y p-value = 0.1797 > 0.05, no podemos rechazar la hipótesis nula. Concluimos que nuestros datos cumplen el supuesto de normalidad y homogeneidad de varianzas.
+
+
++ Comprobación de supuestos para el factor tipoDiet:
+
+```{r}
+shapiro.test( dieta$peso2[dieta$tipoDiet == "1"] )    #p-value = 0.3403
+shapiro.test( dieta$peso2[dieta$tipoDiet == "2"] )    #p-value = 0.4113
+shapiro.test( dieta$peso2[dieta$tipoDiet == "3"] )    #p-value = 0.8936
+
+bartlett.test( peso2 ~ tipoDiet, data = dieta )       #p-value = 0.4568
+```
+
+
+Para todos los tipos de de dieta se obtiene un p-value mayor de 0.05 (0.3403, 0.4113, 0.8936) y p-value = 0.4568 > de 0.05, no podemos rechazar la hipótesis nula. Por lo tanto, podemos concluir que nuestros datos cumplen el supuesto de normalidad y homogeneidad de varianzas.
+
++ Estimación del modelo ANOVA
+
+```{r}
+table( dieta$edad )
+table( dieta$tipoDiet )
+```
+Los datos están balanceados.
+
+Realizamos la estimación del modelo ANOVA de dos vías:
+
+```{r}
+modelo1c <- aov( peso2 ~ edad * tipoDiet, data = dieta )
+
+summary( modelo1c ) 
+```
+
+La variable tipoDiet tiene un efecto significativo (3.62e-05 < 0.05), la edad no (0.296 > 0.05) y no hay interacción entre ambas (0.331 > 0.05), esto es, se acepta la hipótesis nula. No hay diferencias significativas en el peso final según el grupo de edad y el tipo de dieta.
+
+```{r}
+interaction.plot( dieta$edad, dieta$tipoDiet, dieta$peso2, ylim = c( 80, 130 ),
+                  col = c( 2, 3, 4 ), lty = c( 1,2,4 ), lwd = 2, 
+                  ylab = "Media del peso final", xlab = "Edad", trace.label = "Dieta seguida" )
+
+```
+
+
+
+
+
+d. Comprueba si la media de los pesos difieren dependiendo del momento de la dieta en el que se
+esté. Reestructura el data frame con la función `melt()` del paquete `reshape2`. En caso de que
+difieran, encuentra en qué grupos están las diferencias.
+
+En este caso tenemos **ANOVA para medidas repetidas** y necesitamos comprobar el supuesto de esfericidad.
+
+Vamos a reestructurar los datos
+```{r}
+library( reshape2 )
+dietaRe <- melt( dieta, id = c( "id", "edad", "tipoDiet" ),
+measure = c( "peso0", "peso1", "peso2" ),
+variable.name = "Periodo",
+value.name = "Peso" )
+head( dietaRe )
+```
+
+La función `ezANOVA()` del paquete `ez` además del modelo ANOVA
+lleva a cabo el análisis de supuestos previo:
+
+
+```{r}
+summary( aov( Peso ~ Periodo + Error( id / Periodo ), data = dietaRe ) )
+
+library( ez )
+options( contrasts = c( "contr.sum", "contr.poly" ) )
+ezANOVA( data = dietaRe, dv = Peso, wid = id, within = Periodo, type = 3 )
+
+```
+Obtenemos un p-valor = 0.0004999883 < 0.05 por lo que aceptamos que hay diferencias de pesos al comenzar la dieta, en mitad y al finalizar.
+
+```{r}
+friedman.test( Peso ~ Periodo | id , data = dietaRe )
+pairwise.wilcox.test( dietaRe$Peso, dietaRe$Periodo, p.adjust = "bonferroni", exact = FALSE, paired = TRUE )
+
+```
+
+Los datos que difieren son en el inicio y final de la dieta.
+
+```{r}
+boxplot( dietaRe$Peso ~ dietaRe$Periodo,  varwidth = TRUE, ylab = "Peso (kg)", main="Evolución dieta",
+         xlab = "Período", names = c("Inicio dieta", "Mitad dieta", "Final dieta"), col = 28 )
+```
+
+
+## Ejercicio 2
+
+Una empresa quiere saber si existe relación entre el salario de un trabajador y las ausencias del mismo
+al trabajo. Para el estudio se dividió el salario en distintas categorías y se eligió aleatoriamente un
+grupo de trabajadores para determinar el número de días que habían faltado en los últimos tres años.
+Los datos están en la base william.csv. ¿Se puede construir un modelo que relacione la categoría del
+salario y las ausencias en el trabajo?
+
+```{r}
+william <- read.csv2("william.csv")
+str(william)
+```
+
+
+a. Realiza el ajuste del modelo con la variable explicativa salario. Explica los resultados obtenidos
+y haz la gráfica de los datos con la recta de regresión.
+
+```{r}
+plot(william)
+modelo2a <- lm(william$ausencias~william$salario)
+
+plot(william, xlab = "Salario", ylab = "Ausencias", main="Ajuste lineal" )
+abline(modelo2a, col=2)
+
+summary(modelo2a)
+```
+
+Tenemos un $R^2$ = 0.7967, este valor indica una buena capacidad de predicción por parte de la variable predictora.
+
+El modelo ajustado es $ausencias = 47.60 − 3.01 \cdot salario$
+
+
+b. Realiza el diagnóstico del modelo: Normalidad de los residuos, homogeneidad de varianzas e
+incorrelación de los residuos.
+
+```{r}
+william$fitted.modelo <- fitted( modelo2a )       #valores ajustados
+william$residuals.modelo <- residuals( modelo2a ) #residuos
+william$rstudent.modelo <- rstudent( modelo2a )   #estadisticos
+
+shapiro.test( william$rstudent.modelo )
+```
+p-value = 0.1637 > 0.05, no podemos rechazar la hipótesis nula, suponemos normalidad de residuos.
+
+```{r}
+library(lmtest)
+bptest( modelo2a )
+```
+
+p-value = 0.467 > 0.05, no podemos rechazar la hipótesis nula y suponemos homogeneidad de varianzas.
+
+```{r}
+dwtest( ausencias ~ salario,  alternative = "two.sided",  data = william)
+```
+p-value = 0.3763 > 0.05, no podemos rechazar la hipótesis nula. Suponemos incorrelación de los residuos.
+
+
